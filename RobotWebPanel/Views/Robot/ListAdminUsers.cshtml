@@ -1,0 +1,60 @@
+﻿@model System.Data.Entity.DbSet<RobotWebPanel.Models.AspNetUsers>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<body>
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3>Список администраторов</h3>
+</div>
+<div class="modal-body">
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>Имя администратора</th>
+            <th>Дата создания</th>
+            <th>Уровень доступа</th>
+            <th>Удаление</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var aspNetUser in Model)
+        {
+            <tr>
+                <td>@aspNetUser.UserName</td>
+                <td>@aspNetUser.CreationDateTime</td>
+                <td>@aspNetUser.AccessLevel</td>
+                <td><a href="#" onclick="deleteAdmin('@aspNetUser.UserName','@User.Identity.Name')">Удалить</a></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+<div class="modal-footer">
+    <button type="button" data-dismiss="modal" class="btn">Закрыть</button>
+    <button type="submit" class="btn btn-primary">Создать и закрыть</button>
+</div>
+@* ReSharper disable once NativeTypePrototypeExtending *@
+</body>
+
+<script type="text/javascript">
+    function deleteAdmin(username, currentUser) {
+        if (username.localeCompare(currentUser) == 0) {
+            alert("Нельзя удалить себя в качестве администратора");
+            return;
+        }
+        var result = confirm("Вы уверены что хотите удалить пользователя: " + username + " ?");
+        if (!result)
+            return;
+        $.ajax({
+            type: "POST",
+            url: "../Account/DeleteAdmin",
+            data: {'userName' : username}
+        });
+        window.location.replace("../Robot/Index");
+    }
+</script>

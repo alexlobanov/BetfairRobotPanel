@@ -1,0 +1,110 @@
+﻿@model RobotWebPanel.Models.RobotModel
+
+@{
+    Layout = null;
+}
+
+<script src="@Url.Content("~/Scripts/jquery.unobtrusive-ajax.js")" type="text/javascript"></script>
+
+@{
+    ViewBag.Title = "Регистрация пользователя";
+    Layout = null;
+}
+
+@using (Html.BeginForm(null, null, FormMethod.Post, new { name = "form", id = "form" }))
+{
+
+    <body>
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3>Изменение пользователя</h3>
+        </div>
+        <div class="modal-body">
+            @Html.Label("Имя пользователя:")
+            <p>@Html.TextBoxFor(x => x.UserName, new { @class = "form-control", @placeholder = "Имя пользователя(Betfair)" })</p>
+            @Html.ValidationMessageFor(x => x.UserName)
+
+            @Html.Label("Ограничение доступа до:")
+            <p>@Html.TextBoxFor(x => x.AccessDate, new {  @type = "date", @class = "form-control", @placeholder = "Доступ до:" })</p>
+            @Html.ValidationMessageFor(x => x.AccessDate)
+
+            @Html.Label("Или предоставить доступ на: ")
+            <p></p>
+            <button class="btn btn-default" type="button" onclick="onClickDaysButton(1)">1 день</button>
+            <button class="btn btn-default" type="button" onclick="onClickDaysButton(2)">1 неделю</button>
+            <button class="btn btn-default" type="button" onclick="onClickDaysButton(3)">2 недели</button>
+            <button class="btn btn-default" type="button" onclick="onClickDaysButton(4)">1месяц</button>
+
+            <p></p>
+
+            @Html.Label("Доступ для этого пользователя будет продоставлен до: ")
+            @Html.Label("Время не определенно", new { @id = "TextAccesTime" })
+            <p>
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" data-dismiss="modal" class="btn">Закрыть</button>
+            <button type="submit" class="btn btn-primary">Изменить и закрыть</button>
+        </div>
+        @* ReSharper disable once NativeTypePrototypeExtending *@
+    </body>
+    <script>
+
+        Date.prototype.addDays = function (days) {
+            this.setDate(this.getDate() + parseInt(days));
+            return this;
+        };
+        function onClickDaysButton(id) {
+            var currentdate = new Date();
+            switch (id) {
+            case 1:
+                currentdate = currentdate.addDays(1);
+                break;
+            case 2:
+                currentdate = currentdate.addDays(7);
+                break;
+            case 3:
+                currentdate = currentdate.addDays(14);
+                break;
+            case 4:
+                currentdate = currentdate.addDays(30);
+                break;
+            default:
+                currentdate = currentdate.addDays(1);
+            }
+
+            var curr_date = currentdate.getDate();
+            var curr_month = currentdate.getMonth() + 1;
+            var curr_year = currentdate.getFullYear();
+            if (curr_date < 10)
+                curr_date = '0' + curr_date;
+            if (curr_month < 10)
+                curr_month = '0' + curr_month;
+            var ret = curr_year + "-" + curr_month + "-" + curr_date;
+
+            document.getElementById('AccessDate').value = ret;
+            document.getElementById('TextAccesTime').innerHTML = document.getElementById("AccessDate").value;
+        }
+
+        $(document).ready(function () {
+            var curr_date = @Model.AccessDate.Day;
+            var curr_month = @Model.AccessDate.Month;
+            var curr_year = @Model.AccessDate.Year;
+            if (curr_date < 10)
+                curr_date = '0' + curr_date;
+            if (curr_month < 10)
+                curr_month = '0' + curr_month;
+            var ret = curr_year + "-" + curr_month + "-" + curr_date;
+            document.getElementById('AccessDate').value = ret;
+            document.getElementById("AccessDate").onblur = function() {
+                document.getElementById("AccessTimeLimit").value = document.getElementById("AccessDate").value;
+                document.getElementById('TextAccesTime').innerHTM = document.getElementById("AccessDate").value;
+            }
+        });
+
+
+        function addMinutes(date, minutes) {
+            return new Date(date.getTime() + minutes*60000);
+        }
+    </script>
+}

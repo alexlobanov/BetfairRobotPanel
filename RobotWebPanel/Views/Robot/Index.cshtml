@@ -1,0 +1,172 @@
+﻿@model IEnumerable<RobotWebPanel.Models.RobotModel>
+
+@{
+    ViewBag.Title = "title";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link href="~/Content/Robot.css" rel="stylesheet" type="text/css"/>
+<link href="http://jschr.github.io/bootstrap-modal/css/bootstrap-modal.css" type="text/css" rel="stylesheet"/>
+
+<link href="https://cdn.datatables.net/1.10.12/css/dataTables.bootstrap.min.css" type="text/css" rel="stylesheet"/>
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.js"></script>
+
+
+<div class="btn-group btn-group-justified button-menu ajax">
+    <div class="btn-group">
+        <button type="button" class="btn btn-default" onclick="window.location.replace('../Account/Registration')">Создание администратора</button>
+    </div>
+    <div class="btn-group">
+        <button type="button" class="btn btn-default create" data-toggle="modal">Создание пользователя</button>
+    </div>
+    <div class="btn-group">
+        <button type="button" class="btn btn-default listAdminUsers" data-toggle="modal">Список администраторов панели</button>
+    </div>
+</div>
+
+<div class="table-responsive robot-users">
+    <table id="userstable" class="table table-striped table-bordered" cellspacing="0" width="100%">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Имя пользователя</th>
+                <th>Дата создания</th>
+                <th>Доступ до</th>
+                <th>Последний баланс</th>
+                <th>Дата последнего запуска</th>
+                <th>Количество запусков</th>
+                <th>Действия над пользователем</th>
+            </tr>
+        </thead>
+        <tfoot>
+        <tr>
+            <th>Id</th>
+            <th>Имя пользователя</th>
+            <th>Дата создания</th>
+            <th>Доступ до</th>
+            <th>Последний баланс</th>
+            <th>Дата последнего запуска</th>
+            <th>Количество запусков</th>
+            <th>Действия над пользователем</th>
+        </tr>
+        </tfoot>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.Id.ToString()</td>
+                    <td>@user.UserName</td>
+                    <td>@user.CreationDate.ToString()</td>
+                    <td>@user.AccessDate.ToString()</td>
+                    <td>@user.LastBalance.ToString()</td>
+                    <td>@user.LastAccessDate.ToString()</td>
+                    <td>@user.CountStartsProgramm.ToString()</td>
+                    <td>
+                        <button type="button" class="btn btn-default btn-xs" onclick="deleteUser('@user.Id','@user.UserName')">
+                            <span class="glyphicon glyphicon-minus" aria-hidden="true"></span> Удалить
+                        </button>
+                        <button type="button" class="btn btn-default btn-xs" onclick="openEdit('@user.UserName','@user.Id')">
+                            <span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Изменить
+                        </button>
+
+
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<script type="text/javascript">
+    var $modal = $('#ajax-modal');
+
+    function deleteUser(userId, username) {
+        var result = confirm("Вы уверены что хотите удалить пользователя: " + username + " ?");
+        if (!result)
+            return;
+        $.ajax({
+            type: "Delete",
+            url: "../Robot/DeleteUser",
+            data: {
+                'userName': username,
+                'userId': userId
+            }
+        });
+    }
+
+
+    function openEdit(username,userId) {
+        $('body').modalmanager('loading');
+        setTimeout(function () {
+            $modal.load('../Robot/EditRobotUser?userId=' + userId + "&" + "userName=" + username , '', function () {
+                $modal.modal();
+            });
+        }, 1000);
+    }
+
+    $('.ajax .listAdminUsers')
+        .on('click',
+            function() {
+                $('body').modalmanager('loading');
+                setTimeout(function () {
+                    $modal.load('../Robot/ListAdminUsers', '', function () {
+                        $modal.modal();
+                    });
+                }, 1000);
+            });
+
+    $('.ajax .create').on('click', function () {
+        // create the backdrop and wait for next modal to be triggered
+        $('body').modalmanager('loading');
+
+        setTimeout(function () {
+            $modal.load('../Robot/RegistrationUsers', '', function () {
+                $modal.modal();
+            });
+        }, 1000);
+    });
+
+    $modal.on('click', '.update', function () {
+        $modal.modal('loading');
+        setTimeout(function () {
+            $modal
+              .modal('loading')
+              .find('.modal-body')
+                .prepend('<div class="alert alert-info fade in">' +
+                  'Пользователь создан!<button type="button" class="close" data-dismiss="alert">&times;</button>' +
+                '</div>');
+        }, 1000);
+    });
+
+
+    $(document).ready(function () {
+        $('#userstable').DataTable({
+            "language": {
+                "decimal": "",
+                "emptyTable": "Нет данных для отображения",
+                "info": "Отображение _START_ до _END_ из _TOTAL_ записей",
+                "infoEmpty": "Отображение 0 до 0 из 0 записей",
+                "infoFiltered": "(Отфильтрованно из _MAX_ записей)",
+                "infoPostFix": "",
+                "thousands": ",",
+                "lengthMenu": "Показать _MENU_ записей",
+                "loadingRecords": "Загрузка...",
+                "processing": "Обработка...",
+                "search": "Поиск:",
+                "zeroRecords": "Не найденно",
+                "paginate": {
+                    "first": "Первая",
+                    "last": "Последняя",
+                    "next": "Следующая",
+                    "previous": "Предыдушая"
+                },
+                "aria": {
+                    "sortAscending": ": Отсортировать по возрастанию",
+                    "sortDescending": ": Отсортировать по убыванию"
+                }
+            }
+        });
+    });
+</script>
